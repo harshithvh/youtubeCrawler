@@ -1,16 +1,12 @@
 package model
 
+import "time"
+
 type Video struct {
-	ID          string        `bson:"_id"`
-	Title       string        `bson:"title"`
-	Description string        `bson:"description"`
-	PublishedAt string        `bson:"published_at"`
-	Thumbnails   Thumbnails `bson:"thumbnails"`
+	VideoID       string        `gorm:"primaryKey" bson:"_id"`
+	Title         string        `bson:"title"`
+	Description   string        `bson:"description"`
+	ChannelTitle  string        `bson:"channel_title"`
+	PublishedAt   time.Time     `bson:"published_at"`
+	ThumbnailURL  string        `bson:"thumbnail_url"`
 }
-
-type Thumbnails struct {
-	Default string `bson:"default"`
-	Medium  string `bson:"medium"`
-	High    string `bson:"high"`
-}
-

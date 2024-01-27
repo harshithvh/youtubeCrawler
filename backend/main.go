@@ -4,54 +4,75 @@ import (
 	"cricketCrawler/api"
 	"cricketCrawler/utils"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/api/youtube/v3"
 )
 
+var stopFetching bool = true
+
 func main() {
+    err := godotenv.Load()
+    if err != nil {
+        log.Fatalf("Error loading .env file: %v", err)
+    }
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
+    // Initialize MongoDB and YouTube client
+    db := utils.InitDB()
+    apiKeys := utils.FetchAPIKeys()
+    youtube := utils.InitYouTubeClient(apiKeys[0])
 
-	// Initialize MongoDB and YouTube client
-	db := utils.InitDB()
-	apiKeys := utils.GetAPIKeys()
-	youtube := utils.InitYouTubeClient(apiKeys[0])
+    router := gin.Default()
 
-	// Initiate background fetching
-	go func() {
-		for {
-			if err := utils.FetchAndStoreVideos(youtube, db, "cricket"); err != nil {
-				log.Printf("Error fetching and storing videos: %v", err)
-			}
-			time.Sleep(20 * time.Second) 
-		}
-	}()
+    // Enable CORS for frontend
+    router.Use(cors.New(cors.Config{
+        AllowOrigins: []string{"http://localhost:3000"},
+        AllowMethods: []string{"GET"},
+    }))
 
-	router := gin.Default()
+    // Routes
+    router.GET("/videos", func(c *gin.Context) {
+        api.GetPaginatedVideos(db, c)
+    })
 
-	// Enable CORS for frontend
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
-	router.Use(cors.New(config))
+    router.GET("/search", func(c *gin.Context) {
+        api.GetVideos(db, c)
+    })
 
-	// Routes
-	router.GET("/videos", func(c *gin.Context) {
-		api.GetPaginatedVideosHandler(db, c)
-	})
+    router.GET("/ping", func(c *gin.Context) {
+        api.PingServer(c)
+    })
 
-	router.GET("/search", func(c *gin.Context) {
-		api.GetVideosHandler(db, c)
-	})
+    router.GET("/start-fetching", func(c *gin.Context) {
+	    category := c.Query("category")
+        stopFetching = false
+        go fetchVideosPeriodically(category, youtube, db)
+        c.String(http.StatusOK, "Fetching started")
+    })
 
-	router.GET("/ping", func(c *gin.Context) {
-		api.PingHandler(c)
-	})
+    router.GET("/stop-fetching", func(c *gin.Context) {
+        if stopFetching {
+            c.String(http.StatusBadRequest, "Fetching is not in progress")
+            return
+        }
 
-	router.Run(":8080")
+        stopFetching = true
+        c.String(http.StatusOK, "Fetching stopped")
+    })
+
+    router.Run(":8080")
+}
+
+func fetchVideosPeriodically(category string, youtube *youtube.Service, db *mongo.Client) {
+    for !stopFetching {
+        if err := utils.FetchVideos(youtube, db, category); err != nil {
+            log.Printf("Error fetching videos: %v", err)
+        }
+        time.Sleep(20 * time.Second)
+    }
 }

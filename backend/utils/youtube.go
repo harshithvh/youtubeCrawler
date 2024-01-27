@@ -27,7 +27,7 @@ func InitYouTubeClient(apiKey string) *youtube.Service {
 	return client
 }
 
-func GetAPIKeys() []string {
+func FetchAPIKeys() []string {
 	apiKeyStr := os.Getenv("API_KEYS")
 	if apiKeyStr == "" {
 		log.Fatal("Missing API_KEYS environment variable")
@@ -44,18 +44,18 @@ func GetAPIKeys() []string {
     return filteredAPIKeys
 }
 
-func FetchAndStoreVideos(youtubeClient *youtube.Service, db *mongo.Client, query string) error {
+func FetchVideos(youtubeClient *youtube.Service, db *mongo.Client, query string) error {
 
-	if err := performFetchAndStore(youtubeClient, db, query); err != nil {
-		log.Printf("Error fetching and storing videos: %v", err)
+	if err := ExecuteFetch(youtubeClient, db, query); err != nil {
+		log.Printf("Failed to download videos: %v", err)
 	} else {
-		log.Print("Fetched and stored videos successfully")
+		log.Print("Successfully downloaded videos")
 	}
 
 	return nil
 }
 
-func performFetchAndStore(youtubeClient *youtube.Service, db *mongo.Client, query string) error {
+func ExecuteFetch(youtubeClient *youtube.Service, db *mongo.Client, query string) error {
 	call := youtubeClient.Search.List([]string{"snippet"}).
 		Q(query).
 		MaxResults(20)
@@ -70,7 +70,7 @@ func performFetchAndStore(youtubeClient *youtube.Service, db *mongo.Client, quer
 
 			expiredAPIKeys = append(expiredAPIKeys, currKey)
 
-			newAPIKey, err := switchAPIKey()
+			newAPIKey, err := UpdateAPIKey()
 			if err != nil {
 				return err // All keys are exhausted
 			}
@@ -79,7 +79,7 @@ func performFetchAndStore(youtubeClient *youtube.Service, db *mongo.Client, quer
 
 			youtubeClient = InitYouTubeClient(newAPIKey)
 
-			return performFetchAndStore(youtubeClient, db, query)
+			return ExecuteFetch(youtubeClient, db, query)
 		}
 		return err
 	}
@@ -93,30 +93,27 @@ func performFetchAndStore(youtubeClient *youtube.Service, db *mongo.Client, quer
 		}
 
 		video := model.Video{
-			ID:          item.Id.VideoId,
-			Title:       item.Snippet.Title,
-			Description: item.Snippet.Description,
-			PublishedAt: publishedAt.Format(time.RFC3339),
-			Thumbnails: model.Thumbnails{
-				Default: item.Snippet.Thumbnails.Default.Url,
-				Medium:  item.Snippet.Thumbnails.Medium.Url,
-				High:    item.Snippet.Thumbnails.High.Url,
-			},
+			VideoID:      item.Id.VideoId,
+			Title:        item.Snippet.Title,
+			Description:  item.Snippet.Description,
+			ChannelTitle: item.Snippet.ChannelTitle,
+			PublishedAt:  publishedAt,
+			ThumbnailURL: item.Snippet.Thumbnails.Default.Url,
 		}
 		videos = append(videos, video)
 	}
 
-	if err := storeVideos(db, videos); err != nil {
+	if err := StoreVideos(db, videos, query); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func storeVideos(db *mongo.Client, videos []model.Video) error {
+func StoreVideos(db *mongo.Client, videos []model.Video, query string) error {
 	duplicateCount := 0
 	for _, video := range videos {
-		if err := StoreVideo(db, video); err != nil {
+		if err := StoreVideo(db, video, query); err != nil {
 			log.Printf("Error storing video: %v", err)
 			if err.Error() == "video already exists in the database" {
 				duplicateCount++
@@ -127,10 +124,10 @@ func storeVideos(db *mongo.Client, videos []model.Video) error {
 	return nil
 }
 
-func switchAPIKey() (string, error) {
+func UpdateAPIKey() (string, error) {
     availableAPIKeys := make([]string, 0)
 
-    allAPIKeys := GetAPIKeys()
+    allAPIKeys := FetchAPIKeys()
 
     // Filter
     for _, key := range allAPIKeys {

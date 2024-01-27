@@ -36,18 +36,29 @@ func GetDatabase(client *mongo.Client) *mongo.Database {
 	return client.Database(databaseName)
 }
 
-func GetCollection(db *mongo.Database) *mongo.Collection {
-	collectionName := os.Getenv("COLLECTION_NAME")
+func GetCollection(db *mongo.Database, category string) *mongo.Collection {
+	var collectionName string
+
+	switch category {
+	case "cricket":
+		collectionName = os.Getenv("COLLECTION_NAME1")
+	case "football":
+		collectionName = os.Getenv("COLLECTION_NAME2")
+	default:
+		collectionName = os.Getenv("COLLECTION_NAME3")
+	}
+
 	if collectionName == "" {
 		log.Fatal("Missing COLLECTION_NAME environment variable")
 	}
+
 	return db.Collection(collectionName)
 }
 
-func StoreVideo(db *mongo.Client, video model.Video) error {
-	collection := GetCollection(GetDatabase(db))
+func StoreVideo(db *mongo.Client, video model.Video, category string) error {
+	collection := GetCollection(GetDatabase(db), category)
 
-	filter := bson.D{{Key: "id", Value: video.ID}}
+	filter := bson.D{{Key: "video_id", Value: video.VideoID}}
 
 	// Check for existing video before upserting
 	count, err := collection.CountDocuments(context.Background(), filter)
@@ -60,10 +71,12 @@ func StoreVideo(db *mongo.Client, video model.Video) error {
 
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
+			{Key: "video_id", Value: video.VideoID},
 			{Key: "title", Value: video.Title},
 			{Key: "description", Value: video.Description},
+			{Key: "channel_title", Value: video.ChannelTitle},
 			{Key: "published_at", Value: video.PublishedAt},
-			{Key: "thumbnails", Value: video.Thumbnails},
+			{Key: "thumbnail_url", Value: video.ThumbnailURL},
 		}},
 	}
 
@@ -71,20 +84,20 @@ func StoreVideo(db *mongo.Client, video model.Video) error {
 	return err
 }
 
-func GetPaginatedVideos(db *mongo.Client, page, pageSize int) ([]model.Video, int64, error) {
+func GetPaginatedVideos(db *mongo.Client, category string, sort, page, pageSize int) ([]model.Video, int64, error) {
 
 	// Calculate the number of videos to skip based on page and pageSize
 	skip := (page - 1) * pageSize
 
 	findOptions := options.Find().
-		SetSort(bson.D{{Key: "published_at", Value: -1}}).
+		SetSort(bson.D{{Key: "published_at", Value: sort}}).
 		SetSkip(int64(skip)).
 		SetLimit(int64(pageSize))
 
 	// empty filter
 	filter := bson.D{{}}
 
-	collection := GetCollection(GetDatabase(db))
+	collection := GetCollection(GetDatabase(db), category)
 
 	cursor, err := collection.Find(context.Background(), filter, findOptions)
 	if err != nil {
@@ -105,19 +118,19 @@ func GetPaginatedVideos(db *mongo.Client, page, pageSize int) ([]model.Video, in
 	return videos, totalVideos, nil
 }
 
-func GetVideosByTitle(db *mongo.Client, query string, page, pageSize int) ([]model.Video, int64, error) {
+func GetVideosByTitle(db *mongo.Client, query string, category string, sort, page, pageSize int) ([]model.Video, int64, error) {
     // Calculate the number of videos to skip based on page and pageSize
 	skip := (page - 1) * pageSize
 
 	findOptions := options.Find().
-		SetSort(bson.D{{Key: "published_at", Value: -1}}).
+		SetSort(bson.D{{Key: "published_at", Value: sort}}).
 		SetSkip(int64(skip)).
 		SetLimit(int64(pageSize))
 
 	// apply filter
     filter := bson.M{"title": bson.M{"$regex": query, "$options": "i"}} // Case-insensitive search
 
-	collection := GetCollection(GetDatabase(db))
+	collection := GetCollection(GetDatabase(db), category)
 
 	cursor, err := collection.Find(context.Background(), filter, findOptions)
 	if err != nil {
