@@ -98,7 +98,7 @@ func ExecuteFetch(youtubeClient *youtube.Service, db *mongo.Client, query string
 			Description:  item.Snippet.Description,
 			ChannelTitle: item.Snippet.ChannelTitle,
 			PublishedAt:  publishedAt,
-			ThumbnailURL: item.Snippet.Thumbnails.Default.Url,
+			ThumbnailURL: item.Snippet.Thumbnails.High.Url,
 		}
 		videos = append(videos, video)
 	}

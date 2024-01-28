@@ -12,7 +12,7 @@ import (
 
 // server check
 func PingServer(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	c.JSON(http.StatusOK, gin.H{"message": "PONG!"})
 }
 
 // retrieves a paginated list of videos from the database.

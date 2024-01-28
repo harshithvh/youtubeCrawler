@@ -40,16 +40,19 @@ func GetCollection(db *mongo.Database, category string) *mongo.Collection {
 	var collectionName string
 
 	switch category {
-	case "cricket":
+	case "Cricket":
 		collectionName = os.Getenv("COLLECTION_NAME1")
-	case "football":
+	case "Football":
 		collectionName = os.Getenv("COLLECTION_NAME2")
-	default:
+	case "Sports":
 		collectionName = os.Getenv("COLLECTION_NAME3")
+	case "New":
+		collectionName = os.Getenv("COLLECTION_NAME4")
 	}
 
 	if collectionName == "" {
-		log.Fatal("Missing COLLECTION_NAME environment variable")
+		log.Printf("Missing COLLECTION_NAME environment variable")
+		return nil
 	}
 
 	return db.Collection(collectionName)
