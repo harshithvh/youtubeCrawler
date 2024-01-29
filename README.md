@@ -56,8 +56,30 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 - Access api at:
 
   ```bash
-  http://localhost:{port}/
+  http://localhost:8080/
 
+# Running the Frontend
+
+- Open directory in terminal:
+
+  ```bash
+  cd youtubeCrawler/frontend
+
+- Install project dependencies:
+
+  ```bash
+  npm install 
+
+- Launch the frontend
+
+  ```bash
+  npm run dev
+
+- Access api at:
+
+  ```bash
+  http://localhost:3000/
+  
 # Running with Docker
 
 - Build Docker images:
