@@ -85,24 +85,17 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
   ```bash
   http://localhost:3000/
 
-<!--
 # Running with Docker
 
 - Build Docker images:
 
   ```bash
-  docker compose build
+  docker build -t {image} .
 
 - Launch and run containers:
 
   ```bash
-  docker compose up
-
-- Stop and remove containers:
-
-  ```bash
-  docker compose down
--->
+  docker run -p {port:port} {image}
 
 # APIs
 
@@ -121,18 +114,20 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 | -----    | --------- | ---- | --------  | 
 | page     |  false    | int  |    1      |
 | pageSize |  false    | int  |    10     |
+| sort     |  false    | int  |    -1     |
 | category |  true     | str  |           |
 
 - GET
   - endpoint: `/search`
   - response: `{"pagination": {"currentPage": int, "pageSize": int, "totalPages": int, "totalVideos": int}, "videos": [{}video]}`
-  - query: http://localhost:{port}/search?query=aus&page=1&pageSize=5&catergory={COLLECTION_NAME}
+  - query: http://localhost:{port}/search?query={xxx}&page=1&pageSize=5&catergory={COLLECTION_NAME}
   - query params:
 
 | param    | required  | type |  default  |
 | -----    | --------- | ---- | --------  | 
 | page     |  false    | int  |    1      |
 | pageSize |  false    | int  |    10     |
+| sort     |  false    | int  |    -1     |
 | query    |  true     | str  |           |
 | category |  true     | str  |           |
 
