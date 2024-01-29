@@ -16,7 +16,9 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/-JavaScript-%23F7DF1C?style=for-the-badge&logo=javascript&logoColor=000000&labelColor=%23F7DF1C&color=%23FFCE5A)
-![react](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![MaterialUI](https://img.shields.io/badge/Material%20UI-007FFF?style=for-the-badge&logo=mui&logoColor=white)
 
 # Reference
 
@@ -43,7 +45,8 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
   API_KEYS=KEY1,KEY2
   MONGO_URI=mongodb://{HOST}:{PORT}/
   DATABASE_NAME=DATABASE_NAME
-  COLLECTION_NAME=COLLECTION_NAME
+  COLLECTION_NAME1=COLLECTION_NAME1
+  COLLECTION_NAME2=COLLECTION_NAME2
 
 - Install project dependencies:
 
@@ -106,23 +109,24 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 - GET  
   - endpoint: `/ping`
   - response: `{"message":"pong"}`
-  - query: http://localhost:{port}/ping
+  - query: http://localhost:{port}/
 
 - GET
   - endpoint: `/videos`
   - response: `{"pagination": {"currentPage": int, "pageSize": int, "totalPages": int, "totalVideos": int}, "videos": [{}video]}`
-  - query: http://localhost:{port}/videos?page=1&pageSize=5
+  - query: http://localhost:{port}/videos?page=1&pageSize=5&catergory={COLLECTION_NAME}
   - query params:
 
 | param    | required  | type |  default  |
 | -----    | --------- | ---- | --------  | 
 | page     |  false    | int  |    1      |
 | pageSize |  false    | int  |    10     |
+| category |  true     | str  |           |
 
 - GET
   - endpoint: `/search`
   - response: `{"pagination": {"currentPage": int, "pageSize": int, "totalPages": int, "totalVideos": int}, "videos": [{}video]}`
-  - query: http://localhost:{port}/search?query=aus&page=1&pageSize=5
+  - query: http://localhost:{port}/search?query=aus&page=1&pageSize=5&catergory={COLLECTION_NAME}
   - query params:
 
 | param    | required  | type |  default  |
@@ -130,4 +134,33 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 | page     |  false    | int  |    1      |
 | pageSize |  false    | int  |    10     |
 | query    |  true     | str  |           |
+| category |  true     | str  |           |
 
+- GET
+  - endpoint: `/start-fetching`
+  - response: `{"message":"Background Task Initiated"}`
+  - query: http://localhost:{port}/start-fetching?category={COLLECTION_NAME}
+  - query params:
+
+| param    | required  | type |  default  |
+| -----    | --------- | ---- | --------  | 
+| category |  true     | str  |           |
+
+- GET
+  - endpoint: `/stop-fetching`
+  - response: `{"message":"Background Task Terminated"}`
+  - query: http://localhost:{port}/stop-fetching
+
+# Screenshots
+
+## Ping Server
+
+![img](screenshots/img3.png)
+
+## Home Page
+
+![img](screenshots/img1.png)
+
+## Search Page
+
+![img](screenshots/img2.png)
