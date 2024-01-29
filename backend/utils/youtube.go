@@ -30,7 +30,7 @@ func InitYouTubeClient(apiKey string) *youtube.Service {
 func FetchAPIKeys() []string {
 	apiKeyStr := os.Getenv("API_KEYS")
 	if apiKeyStr == "" {
-		log.Fatal("Missing API_KEYS environment variable")
+		log.Fatalf("Missing API_KEYS environment variable")
 	}
 	apiKeys := strings.Split(apiKeyStr, ",")
 	// Filter out expired keys
@@ -48,8 +48,9 @@ func FetchVideos(youtubeClient *youtube.Service, db *mongo.Client, query string)
 
 	if err := ExecuteFetch(youtubeClient, db, query); err != nil {
 		log.Printf("Failed to download videos: %v", err)
+		return err
 	} else {
-		log.Print("Successfully downloaded videos")
+		log.Printf("Successfully downloaded videos")
 	}
 
 	return nil

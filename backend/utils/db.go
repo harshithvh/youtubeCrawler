@@ -51,7 +51,7 @@ func GetCollection(db *mongo.Database, category string) *mongo.Collection {
 	}
 
 	if collectionName == "" {
-		log.Printf("Missing COLLECTION_NAME environment variable")
+		log.Fatal("Missing COLLECTION_NAME environment variable")
 		return nil
 	}
 

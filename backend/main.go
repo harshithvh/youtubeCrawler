@@ -49,9 +49,13 @@ func main() {
     })
 
     router.GET("/start-fetching", func(c *gin.Context) {
+        if !stopFetching {
+            c.String(http.StatusBadRequest, "Fetching is already in progress")
+            return
+        }
 	    category := c.Query("category")
         stopFetching = false
-        go fetchVideosPeriodically(category, youtube, db)
+        go fetchVideosPeriodically(category, youtube, db, c)
         c.String(http.StatusOK, "Fetching started")
     })
 
@@ -68,10 +72,13 @@ func main() {
     router.Run(":8080")
 }
 
-func fetchVideosPeriodically(category string, youtube *youtube.Service, db *mongo.Client) {
+func fetchVideosPeriodically(category string, youtube *youtube.Service, db *mongo.Client, c *gin.Context) {
     for !stopFetching {
         if err := utils.FetchVideos(youtube, db, category); err != nil {
             log.Printf("Error fetching videos: %v", err)
+            c.String(http.StatusInternalServerError, "Error fetching videos")
+            stopFetching = true
+            return
         }
         time.Sleep(20 * time.Second)
     }
