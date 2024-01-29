@@ -15,6 +15,8 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)
+![JavaScript](https://img.shields.io/badge/-JavaScript-%23F7DF1C?style=for-the-badge&logo=javascript&logoColor=000000&labelColor=%23F7DF1C&color=%23FFCE5A)
+![react](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 
 # Reference
 
@@ -23,7 +25,7 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 * [Golang Youtube](https://pkg.go.dev/google.golang.org/api@v0.157.0/youtube/v3)
 
 
-# Running the project
+# Running the Backend
 
 - Clone the repo:
   
@@ -75,11 +77,12 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
   ```bash
   npm run dev
 
-- Access api at:
+- Access the dashboard at:
 
   ```bash
   http://localhost:3000/
-  
+
+<!--
 # Running with Docker
 
 - Build Docker images:
@@ -96,7 +99,7 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 
   ```bash
   docker compose down
-
+-->
 
 # APIs
 
